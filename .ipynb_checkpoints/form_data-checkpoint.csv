@@ -1,0 +1,6 @@
+form_name,fields
+Product Feedback,"['Product Name', 'Feedback Text', 'Rating', 'Date']"
+Service Feedback,"['Service Name', 'Customer Comments', 'Rating', 'Date']"
+Website Feedback,"['Page URL', 'Feedback', 'Suggestion', 'Rating']"
+App Feedback,"['App Version', 'Feedback', 'Rating', 'Crash Report']"
+Delivery Feedback,"['Order ID', 'Delivery Time', 'Customer Feedback', 'Rating']"
