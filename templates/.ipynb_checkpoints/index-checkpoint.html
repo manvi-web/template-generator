@@ -1,69 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Template Saver</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; }
-    input, button { padding: 0.5rem; margin: 0.5rem 0; width: 100%; max-width: 400px; }
-    #fields-list { margin-bottom: 1rem; }
-  </style>
+    <title>Template Creator</title>
 </head>
 <body>
-  <h2>Save Form Template</h2>
+    <h2>Create Form Template</h2>
+    <label>Form Name:</label><br>
+    <input type="text" id="form_name"><br><br>
 
-  <label for="form_name">Form Name:</label>
-  <input type="text" id="form_name" placeholder="e.g., Product Feedback" />
+    <label>Fields:</label><br>
+    <input type="text" id="field_input">
+    <button onclick="addField()">Add Field</button>
 
-  <label for="field_input">Field Name:</label>
-  <input type="text" id="field_input" placeholder="e.g., Product Name" />
-  <button onclick="addField()">Add Field</button>
+    <ul id="fields-list"></ul>
 
-  <ul id="fields-list"></ul>
+    <button onclick="submitTemplate()">Save Template</button>
+    <p id="message"></p>
 
-  <button onclick="submitTemplate()">Save Template</button>
+    <script>
+        const fields = [];
 
-  <p id="message"></p>
+        function addField() {
+            const input = document.getElementById('field_input');
+            const fieldName = input.value.trim();
+            if (fieldName) {
+                fields.push(fieldName);
+                const li = document.createElement('li');
+                li.textContent = fieldName;
+                document.getElementById('fields-list').appendChild(li);
+                input.value = '';
+            }
+        }
 
-  <script>
-    let fields = [];
+        function submitTemplate() {
+            const formName = document.getElementById('form_name').value.trim();
+            if (!formName || fields.length === 0) {
+                document.getElementById('message').textContent = 'Please enter form name and at least one field.';
+                return;
+            }
 
-    function addField() {
-      const input = document.getElementById('field_input');
-      const fieldName = input.value.trim();
-      if (fieldName) {
-        fields.push(fieldName);
-        const li = document.createElement('li');
-        li.textContent = fieldName;
-        document.getElementById('fields-list').appendChild(li);
-        input.value = '';
-      }
-    }
-
-    function submitTemplate() {
-      const formName = document.getElementById('form_name').value.trim();
-      if (!formName || fields.length === 0) {
-        document.getElementById('message').textContent = 'Please enter a form name and at least one field.';
-        return;
-      }
-
-      fetch('/save_template', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ form_name: formName, fields: fields })
-      })
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('message').textContent = data.message;
-        fields = [];
-        document.getElementById('fields-list').innerHTML = '';
-        document.getElementById('form_name').value = '';
-      })
-      .catch(error => {
-        document.getElementById('message').textContent = 'Error saving template.';
-        console.error(error);
-      });
-    }
-  </script>
+            fetch('/save_template', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ form_name: formName, fields: fields })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message').textContent = data.message;
+            })
+            .catch(error => {
+                console.error(error);
+                document.getElementById('message').textContent = 'Error saving template.';
+            });
+        }
+    </script>
 </body>
 </html>
