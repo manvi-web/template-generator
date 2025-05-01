@@ -1,6 +1,10 @@
 from flask import Flask, request, jsonify
 import sqlite3
+import os
+import json  
+
 app = Flask(__name__)
+
 def init_db():
     conn = sqlite3.connect('templates.db')
     c = conn.cursor()
@@ -13,12 +17,12 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+
 @app.route('/save_template', methods=['POST'])
 def save_template():
     data = request.get_json()
     form_name = data['form_name']
-    fields = json.dumps(data['fields'])  # Save fields as string
-
+    fields = json.dumps(data['fields'])  
     conn = sqlite3.connect('templates.db')
     c = conn.cursor()
     c.execute('INSERT INTO templates (form_name, fields) VALUES (?, ?)', (form_name, fields))
@@ -29,4 +33,5 @@ def save_template():
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))  
+    app.run(host='0.0.0.0', port=port, debug=True)
