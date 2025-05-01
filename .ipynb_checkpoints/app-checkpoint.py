@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, render_template
 import sqlite3
 import os
 import json
@@ -15,11 +15,14 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+@app.route('/')
+def serve_index():
+    return render_template('index.html')  
 @app.route('/save_template', methods=['POST'])
 def save_template():
     data = request.get_json()
     form_name = data['form_name']
-    fields = json.dumps(data['fields'])  
+    fields = json.dumps(data['fields']) 
 
     conn = sqlite3.connect('templates.db')
     c = conn.cursor()
@@ -28,9 +31,6 @@ def save_template():
     conn.close()
 
     return jsonify({"message": "Template saved successfully!"})
-@app.route('/')
-def serve_index():
-    return send_from_directory('.', 'index.html')  
 if __name__ == '__main__':
     init_db()
     port = int(os.environ.get('PORT', 10000))  
