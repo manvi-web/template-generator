@@ -1,37 +1,30 @@
-from flask import Flask, request, jsonify, render_template
-import sqlite3
 import os
+import sqlite3
 import json
+from flask import Flask, jsonify, render_template
 app = Flask(__name__)
-def init_db():
-    conn = sqlite3.connect('templates.db')
+DB_PATH = os.path.join(os.path.dirname(__file__), 'templates.db')
+@app.route('/templates', methods=['GET'])
+def get_templates():
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS templates (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            form_name TEXT,
-            fields TEXT
-        )
-    ''')
-    conn.commit()
+
+    c.execute('SELECT form_name, fields_json FROM templates')
+    rows = c.fetchall()
     conn.close()
+
+    templates = []
+    for form_name, fields_json in rows:
+        fields = json.loads(fields_json)
+        templates.append({
+            'form_name': form_name,
+            'fields': fields
+        })
+
+    return jsonify({'templates': templates})
 @app.route('/')
-def serve_index():
-    return render_template('index.html')  
-@app.route('/save_template', methods=['POST'])
-def save_template():
-    data = request.get_json()
-    form_name = data['form_name']
-    fields = json.dumps(data['fields']) 
+def home():
+    return render_template('templates.html') 
 
-    conn = sqlite3.connect('templates.db')
-    c = conn.cursor()
-    c.execute('INSERT INTO templates (form_name, fields) VALUES (?, ?)', (form_name, fields))
-    conn.commit()
-    conn.close()
-
-    return jsonify({"message": "Template saved successfully!"})
 if __name__ == '__main__':
-    init_db()
-    port = int(os.environ.get('PORT', 10000))  
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(debug=True, host='0.0.0.0', port=10000)
