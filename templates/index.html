@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Predefined Templates</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+        }
+        .template {
+            border: 1px solid #ccc;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .template h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .template ul {
+            padding-left: 20px;
+        }
+        .buttons {
+            margin-top: 0.5rem;
+        }
+        .buttons button {
+            margin-right: 10px;
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .download {
+            background-color: #28a745;
+            color: white;
+        }
+        .edit {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Predefined Templates</h1>
+    <div id="template-list">Loading...</div>
+
+    <script>
+        async function loadTemplates() {
+            try {
+                const response = await fetch('/templates');
+                const data = await response.json();
+
+                const container = document.getElementById('template-list');
+                container.innerHTML = '';
+
+                if (data.templates.length === 0) {
+                    container.innerHTML = '<p>No templates available.</p>';
+                    return;
+                }
+
+                data.templates.forEach(template => {
+                    const div = document.createElement('div');
+                    div.className = 'template';
+
+                    const title = document.createElement('h2');
+                    title.textContent = template.form_name;
+                    div.appendChild(title);
+
+                    const ul = document.createElement('ul');
+                    template.fields.forEach(field => {
+                        const li = document.createElement('li');
+                        li.textContent = field;
+                        ul.appendChild(li);
+                    });
+                    div.appendChild(ul);
+
+                    // Add buttons
+                    const buttonDiv = document.createElement('div');
+                    buttonDiv.className = 'buttons';
+
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'download';
+                    downloadBtn.textContent = 'Download JSON';
+                    downloadBtn.onclick = () => {
+                        const json = JSON.stringify({
+                            form_name: template.form_name,
+                            fields: template.fields
+                        }, null, 2);
+
+                        const blob = new Blob([json], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${template.form_name.replace(/\s+/g, '_')}.json`;
+                        a.click();
+
+                        URL.revokeObjectURL(url);
+                    };
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'edit';
+                    editBtn.textContent = 'Edit';
+                    editBtn.onclick = () => {
+                        alert(`Edit feature coming soon for: ${template.form_name}`);
+                        // You could later navigate to `/edit/<form_id>` or open a modal.
+                    };
+
+                    buttonDiv.appendChild(downloadBtn);
+                    buttonDiv.appendChild(editBtn);
+                    div.appendChild(buttonDiv);
+
+                    container.appendChild(div);
+                });
+            } catch (error) {
+                document.getElementById('template-list').innerHTML = 'Error loading templates.';
+                console.error('Error fetching templates:', error);
+            }
+        }
+
+        window.onload = loadTemplates;
+    </script>
+</body>
+</html>
