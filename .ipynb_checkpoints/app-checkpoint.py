@@ -2,30 +2,45 @@ import os
 import json
 import sqlite3
 from flask import Flask, jsonify, render_template
+
 app = Flask(__name__)
+
+# Define the absolute path to the database file
 DB_PATH = os.path.join(os.path.dirname(__file__), 'templates.db')
+
 @app.route('/')
 def home():
-    return render_template('index.html')  
+    return render_template('index.html')  # File must be in templates/index.html
+
 @app.route('/templates', methods=['GET'])
 def get_templates():
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute('SELECT form_name, fields_json FROM templates')
-    rows = c.fetchall()
-    conn.close()
+    try:
+        print(f"[INFO] DB path: {DB_PATH}")
+        if not os.path.exists(DB_PATH):
+            print("[ERROR] templates.db file not found!")
+            return jsonify({'error': 'Database file not found'}), 500
 
-    templates = []
-    for form_name, fields_json in rows:
-        fields = json.loads(fields_json)
-        templates.append({
-            'form_name': form_name,
-            'fields': fields
-        })
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute('SELECT form_name, fields_json FROM templates')
+        rows = c.fetchall()
+        conn.close()
 
-    return jsonify({'templates': templates})
+        templates = []
+        for form_name, fields_json in rows:
+            fields = json.loads(fields_json)
+            templates.append({
+                'form_name': form_name,
+                'fields': fields
+            })
+
+        return jsonify({'templates': templates})
+
+    except Exception as e:
+        print(f"[ERROR] Failed to load templates: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
-   
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    # Render/Heroku-compatible port and host
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
