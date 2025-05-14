@@ -2,16 +2,11 @@ import os
 import json
 import sqlite3
 from flask import Flask, jsonify, render_template
-
 app = Flask(__name__)
-
-# Define the absolute path to the database file
 DB_PATH = os.path.join(os.path.dirname(__file__), 'templates.db')
-
 @app.route('/')
 def home():
-    return render_template('index.html')  # File must be in templates/index.html
-
+    return render_template('index.html')  
 @app.route('/templates', methods=['GET'])
 def get_templates():
     try:
@@ -41,6 +36,6 @@ def get_templates():
         return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
-    # Render/Heroku-compatible port and host
+    
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
